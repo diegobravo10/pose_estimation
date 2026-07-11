@@ -1,0 +1,3 @@
+/home/diego/Documentos/tesis_pose/build/CMakeFiles/tesis_pose.dir
+/home/diego/Documentos/tesis_pose/build/CMakeFiles/edit_cache.dir
+/home/diego/Documentos/tesis_pose/build/CMakeFiles/rebuild_cache.dir
