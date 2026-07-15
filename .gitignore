@@ -1,0 +1,21 @@
+# Compilación
+build/
+
+# Resultados generados
+results/*.csv
+
+# Archivos temporales
+*.log
+*.tmp
+
+# VS Code
+.vscode/
+
+# Sistema operativo
+.DS_Store
+
+# Archivos de CMake generados
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile

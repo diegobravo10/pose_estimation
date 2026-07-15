@@ -1,11 +1,14 @@
 #include "camera.hpp"
 #include "csv_logger.hpp"
 #include "fps_meter.hpp"
+#include "pose_estimator.hpp"
 
 #include <opencv2/opencv.hpp>
 
+#include <chrono>
 #include <iomanip>
 #include <iostream>
+#include <memory>
 #include <sstream>
 #include <string>
 
@@ -40,6 +43,14 @@ int main(int argc, char* argv[]) {
 
     Camera camera;
 
+    std::unique_ptr<PoseEstimator> poseEstimator;
+    try {
+        poseEstimator = std::make_unique<PoseEstimator>();
+    } catch (const std::exception& error) {
+        std::cerr << "Error: " << error.what() << "\n";
+        return 1;
+    }
+
     if (!camera.open(
             cameraIndex,
             requestedWidth,
@@ -64,6 +75,7 @@ int main(int argc, char* argv[]) {
     }
 
     cv::Mat frame;
+    double inferenceMilliseconds = 0.0;
 
     std::cout << "\nControles:\n";
     std::cout << "  q   salir\n";
@@ -77,8 +89,23 @@ int main(int argc, char* argv[]) {
             break;
         }
 
-        const bool fpsUpdated =
-            fpsMeter.update();
+        try {
+            const auto inferenceStart = std::chrono::steady_clock::now();
+            const std::vector<Keypoint> keypoints = poseEstimator->estimate(frame);
+            const auto inferenceEnd = std::chrono::steady_clock::now();
+
+            inferenceMilliseconds =
+                std::chrono::duration<double, std::milli>(
+                    inferenceEnd - inferenceStart
+                ).count();
+
+            poseEstimator->drawPose(frame, keypoints);
+        } catch (const std::exception& error) {
+            std::cerr << "\nError: " << error.what() << "\n";
+            break;
+        }
+
+        const bool fpsUpdated = fpsMeter.update();
 
         if (fpsUpdated) {
             std::cout
@@ -86,6 +113,9 @@ int main(int argc, char* argv[]) {
                 << std::fixed
                 << std::setprecision(2)
                 << fpsMeter.fps()
+                << " | Inferencia: "
+                << inferenceMilliseconds
+                << " ms"
                 << std::flush;
 
             logger.log(
@@ -114,15 +144,29 @@ int main(int argc, char* argv[]) {
             cv::LINE_AA
         );
 
+        std::ostringstream inferenceText;
+        inferenceText << "Inferencia: " << std::fixed << std::setprecision(1)
+                      << inferenceMilliseconds << " ms";
+
+        cv::putText(
+            frame,
+            inferenceText.str(),
+            cv::Point(20, 70),
+            cv::FONT_HERSHEY_SIMPLEX,
+            0.65,
+            cv::Scalar(0, 255, 0),
+            2,
+            cv::LINE_AA
+        );
+
         const std::string resolutionText =
-            std::to_string(realWidth) +
-            "x" +
+            "Resolucion: " + std::to_string(realWidth) + "x" +
             std::to_string(realHeight);
 
         cv::putText(
             frame,
             resolutionText,
-            cv::Point(20, 70),
+            cv::Point(20, 105),
             cv::FONT_HERSHEY_SIMPLEX,
             0.65,
             cv::Scalar(0, 255, 255),
@@ -152,4 +196,3 @@ int main(int argc, char* argv[]) {
 
     return 0;
 }
-

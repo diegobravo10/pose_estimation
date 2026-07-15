@@ -1,4 +1,4 @@
-# Install script for directory: /home/diego/Documentos/tesis_pose
+# Install script for directory: /media/user/Respaldos/VC-Tesis/pose_estimation
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -50,5 +50,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/diego/Documentos/tesis_pose/build/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/media/user/Respaldos/VC-Tesis/pose_estimation/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
