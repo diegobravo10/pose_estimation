@@ -249,6 +249,30 @@ src/pose_estimator.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/tesis_pose.dir/build.make CMakeFiles/tesis_pose.dir/src/pose_estimator.cpp.s
 .PHONY : src/pose_estimator.cpp.s
 
+src/yolo_pose.o: src/yolo_pose.cpp.o
+.PHONY : src/yolo_pose.o
+
+# target to build an object file
+src/yolo_pose.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tesis_pose.dir/build.make CMakeFiles/tesis_pose.dir/src/yolo_pose.cpp.o
+.PHONY : src/yolo_pose.cpp.o
+
+src/yolo_pose.i: src/yolo_pose.cpp.i
+.PHONY : src/yolo_pose.i
+
+# target to preprocess a source file
+src/yolo_pose.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tesis_pose.dir/build.make CMakeFiles/tesis_pose.dir/src/yolo_pose.cpp.i
+.PHONY : src/yolo_pose.cpp.i
+
+src/yolo_pose.s: src/yolo_pose.cpp.s
+.PHONY : src/yolo_pose.s
+
+# target to generate assembly for a file
+src/yolo_pose.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tesis_pose.dir/build.make CMakeFiles/tesis_pose.dir/src/yolo_pose.cpp.s
+.PHONY : src/yolo_pose.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -273,6 +297,9 @@ help:
 	@echo "... src/pose_estimator.o"
 	@echo "... src/pose_estimator.i"
 	@echo "... src/pose_estimator.s"
+	@echo "... src/yolo_pose.o"
+	@echo "... src/yolo_pose.i"
+	@echo "... src/yolo_pose.s"
 .PHONY : help
 
 

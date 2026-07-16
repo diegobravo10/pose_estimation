@@ -2,6 +2,7 @@
 #include "csv_logger.hpp"
 #include "fps_meter.hpp"
 #include "pose_estimator.hpp"
+#include "yolo_pose.hpp"
 
 #include <opencv2/opencv.hpp>
 
@@ -12,104 +13,344 @@
 #include <sstream>
 #include <string>
 
-int main(int argc, char* argv[]) {
-    int cameraIndex = 0;
+int main(
+    int argc,
+    char* argv[]
+) {
+
+    std::string modelType =
+        "movenet";
+
+    std::string source = "0";
+
+    bool usingCamera = true;
+
     int requestedWidth = 640;
+
     int requestedHeight = 480;
 
     try {
+
         if (argc >= 2) {
-            cameraIndex = std::stoi(argv[1]);
+            modelType = argv[1];
         }
 
         if (argc >= 3) {
-            requestedWidth = std::stoi(argv[2]);
+            source = argv[2];
         }
 
         if (argc >= 4) {
-            requestedHeight = std::stoi(argv[3]);
+            requestedWidth =
+                std::stoi(argv[3]);
         }
+
+        if (argc >= 5) {
+            requestedHeight =
+                std::stoi(argv[4]);
+        }
+
     } catch (const std::exception& error) {
-        std::cerr
-            << "Error en los argumentos: "
-            << error.what() << "\n";
 
         std::cerr
-            << "Uso: ./tesis_pose "
-            << "[camara] [ancho] [alto]\n";
+            << "Error en argumentos: "
+            << error.what()
+            << "\n";
+
+        std::cerr
+            << "Uso con webcam:\n"
+            << "./tesis_pose "
+            << "[movenet|yolo] "
+            << "[camara] "
+            << "[ancho] "
+            << "[alto]\n\n";
+
+        std::cerr
+            << "Uso con video:\n"
+            << "./tesis_pose "
+            << "[movenet|yolo] "
+            << "[video.mp4]\n";
+
+        return 1;
+    }
+
+    if (
+        modelType != "movenet" &&
+        modelType != "yolo"
+    ) {
+
+        std::cerr
+            << "Modelo no valido: "
+            << modelType
+            << "\n";
+
+        std::cerr
+            << "Usa movenet o yolo.\n";
 
         return 1;
     }
 
     Camera camera;
 
-    std::unique_ptr<PoseEstimator> poseEstimator;
+    std::unique_ptr<
+        PoseEstimator
+    > poseEstimator;
+
+    std::unique_ptr<
+        YoloPose
+    > yoloPose;
+
     try {
-        poseEstimator = std::make_unique<PoseEstimator>();
-    } catch (const std::exception& error) {
-        std::cerr << "Error: " << error.what() << "\n";
+
+        if (
+            modelType ==
+            "movenet"
+        ) {
+
+            poseEstimator =
+                std::make_unique<
+                    PoseEstimator
+                >();
+
+        } else {
+
+            yoloPose =
+                std::make_unique<
+                    YoloPose
+                >(
+                    "model/yolov8n-pose.onnx"
+                );
+        }
+
+    } catch (
+        const std::exception& error
+    ) {
+
+        std::cerr
+            << "Error cargando modelo: "
+            << error.what()
+            << "\n";
+
         return 1;
     }
 
-    if (!camera.open(
-            cameraIndex,
-            requestedWidth,
-            requestedHeight
-        )) {
+    bool sourceOpened = false;
+
+    try {
+
+        std::size_t position = 0;
+
+        const int cameraIndex =
+            std::stoi(
+                source,
+                &position
+            );
+
+        /*
+        * Si todo el texto se pudo convertir
+        * a numero, asumimos que es una webcam.
+        */
+        if (
+            position ==
+            source.size()
+        ) {
+
+            usingCamera = true;
+
+            sourceOpened =
+                camera.open(
+                    cameraIndex,
+                    requestedWidth,
+                    requestedHeight
+                );
+
+        } else {
+
+            usingCamera = false;
+
+            sourceOpened =
+                camera.openVideo(
+                    source
+                );
+        }
+
+    } catch (
+        const std::exception&
+    ) {
+
+        /*
+        * Si no se puede convertir a numero,
+        * asumimos que es una ruta de video.
+        */
+
+        usingCamera = false;
+
+        sourceOpened =
+            camera.openVideo(
+                source
+            );
+    }
+
+    if (!sourceOpened) {
         return 1;
     }
 
-    const int realWidth = camera.width();
-    const int realHeight = camera.height();
+    const int realWidth =
+        camera.width();
+
+    const int realHeight =
+        camera.height();
 
     FpsMeter fpsMeter;
 
+    const std::string csvPath =
+        modelType == "yolo"
+            ? "results/yolo_pose.csv"
+            : "results/movenet_pose.csv";
+
     CsvLogger logger(
-        "results/camera_baseline.csv"
+        csvPath
     );
 
-    if (!logger.isOpen()) {
-        std::cerr
-            << "Advertencia: no se pudo abrir "
-            << "el archivo CSV.\n";
-    }
-
     cv::Mat frame;
-    double inferenceMilliseconds = 0.0;
 
-    std::cout << "\nControles:\n";
-    std::cout << "  q   salir\n";
-    std::cout << "  ESC salir\n\n";
+    double inferenceMilliseconds =
+        0.0;
 
-    while (true) {
+    std::cout
+        << "\n============================\n"
+        << "Modelo: "
+        << modelType
+        << "\n"
+        << "Fuente: "
+        << source
+        << "\n"
+        << "Resolucion: "
+        << realWidth
+        << "x"
+        << realHeight
+        << "\n"
+        << "============================\n";
+
+    std::cout
+        << "\nControles:\n"
+        << "  q   salir\n"
+        << "  ESC salir\n\n";
+
+    while (
+        true
+    ) {
+
         if (!camera.read(frame)) {
-            std::cerr
-                << "Error: no se pudo leer "
-                << "un frame de la cámara.\n";
+
+            if (usingCamera) {
+
+                std::cerr
+                    << "Error: no se pudo leer "
+                    << "un frame de la camara.\n";
+
+            } else {
+
+                std::cout
+                    << "\nFin del video.\n";
+            }
+
             break;
         }
 
         try {
-            const auto inferenceStart = std::chrono::steady_clock::now();
-            const std::vector<Keypoint> keypoints = poseEstimator->estimate(frame);
-            const auto inferenceEnd = std::chrono::steady_clock::now();
 
-            inferenceMilliseconds =
-                std::chrono::duration<double, std::milli>(
-                    inferenceEnd - inferenceStart
-                ).count();
+            const auto inferenceStart =
+                std::chrono::
+                    steady_clock::
+                    now();
 
-            poseEstimator->drawPose(frame, keypoints);
-        } catch (const std::exception& error) {
-            std::cerr << "\nError: " << error.what() << "\n";
+            if (
+                modelType ==
+                "movenet"
+            ) {
+
+                const auto keypoints =
+                    poseEstimator
+                        ->estimate(
+                            frame
+                        );
+
+                const auto inferenceEnd =
+                    std::chrono::
+                        steady_clock::
+                        now();
+
+                inferenceMilliseconds =
+                    std::chrono::
+                        duration<
+                            double,
+                            std::milli
+                        >(
+                            inferenceEnd -
+                            inferenceStart
+                        )
+                        .count();
+
+                poseEstimator
+                    ->drawPose(
+                        frame,
+                        keypoints
+                    );
+
+            } else {
+
+                const auto detections =
+                    yoloPose
+                        ->estimate(
+                            frame
+                        );
+
+                const auto inferenceEnd =
+                    std::chrono::
+                        steady_clock::
+                        now();
+
+                inferenceMilliseconds =
+                    std::chrono::
+                        duration<
+                            double,
+                            std::milli
+                        >(
+                            inferenceEnd -
+                            inferenceStart
+                        )
+                        .count();
+
+                yoloPose
+                    ->drawPoses(
+                        frame,
+                        detections
+                    );
+            }
+
+        } catch (
+            const std::exception& error
+        ) {
+
+            std::cerr
+                << "\nError: "
+                << error.what()
+                << "\n";
+
             break;
         }
 
-        const bool fpsUpdated = fpsMeter.update();
+        const bool fpsUpdated =
+            fpsMeter.update();
 
-        if (fpsUpdated) {
+        if (
+            fpsUpdated
+        ) {
+
             std::cout
-                << "\rFPS: "
+                << "\rModelo: "
+                << modelType
+                << " | FPS: "
                 << std::fixed
                 << std::setprecision(2)
                 << fpsMeter.fps()
@@ -136,40 +377,67 @@ int main(int argc, char* argv[]) {
         cv::putText(
             frame,
             fpsText.str(),
-            cv::Point(20, 35),
+            cv::Point(
+                20,
+                35
+            ),
             cv::FONT_HERSHEY_SIMPLEX,
             0.8,
-            cv::Scalar(0, 255, 0),
+            cv::Scalar(
+                0,
+                255,
+                0
+            ),
             2,
             cv::LINE_AA
         );
 
-        std::ostringstream inferenceText;
-        inferenceText << "Inferencia: " << std::fixed << std::setprecision(1)
-                      << inferenceMilliseconds << " ms";
+        std::ostringstream
+            inferenceText;
+
+        inferenceText
+            << "Inferencia: "
+            << std::fixed
+            << std::setprecision(1)
+            << inferenceMilliseconds
+            << " ms";
 
         cv::putText(
             frame,
             inferenceText.str(),
-            cv::Point(20, 70),
+            cv::Point(
+                20,
+                70
+            ),
             cv::FONT_HERSHEY_SIMPLEX,
             0.65,
-            cv::Scalar(0, 255, 0),
+            cv::Scalar(
+                0,
+                255,
+                0
+            ),
             2,
             cv::LINE_AA
         );
 
-        const std::string resolutionText =
-            "Resolucion: " + std::to_string(realWidth) + "x" +
-            std::to_string(realHeight);
+        const std::string modelText =
+            "Modelo: " +
+            modelType;
 
         cv::putText(
             frame,
-            resolutionText,
-            cv::Point(20, 105),
+            modelText,
+            cv::Point(
+                20,
+                105
+            ),
             cv::FONT_HERSHEY_SIMPLEX,
             0.65,
-            cv::Scalar(0, 255, 255),
+            cv::Scalar(
+                0,
+                255,
+                255
+            ),
             2,
             cv::LINE_AA
         );
@@ -179,20 +447,28 @@ int main(int argc, char* argv[]) {
             frame
         );
 
-        const int key = cv::waitKey(1);
+        const int key =
+            cv::waitKey(1);
 
-        if (key == 27 || key == 'q') {
+        if (
+            key == 27 ||
+            key == 'q'
+        ) {
             break;
         }
     }
 
     camera.release();
+
     cv::destroyAllWindows();
 
-    std::cout << "\nPrograma finalizado.\n";
     std::cout
-        << "Resultados guardados en: "
-        << "results/camera_baseline.csv\n";
+        << "\nPrograma finalizado.\n";
+
+    std::cout
+        << "Resultados: "
+        << csvPath
+        << "\n";
 
     return 0;
 }

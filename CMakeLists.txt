@@ -5,7 +5,10 @@ project(tesis_pose VERSION 1.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-set(ONNXRUNTIME_DIR "/media/user/Respaldos/Descargas/onnxruntime")
+
+if(NOT DEFINED ONNXRUNTIME_DIR)
+    message(FATAL_ERROR "Debes definir ONNXRUNTIME_DIR")
+endif()
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
@@ -19,6 +22,7 @@ add_executable(tesis_pose
     src/fps_meter.cpp
     src/csv_logger.cpp
     src/pose_estimator.cpp
+    src/yolo_pose.cpp
 )
 
 target_include_directories(tesis_pose PRIVATE

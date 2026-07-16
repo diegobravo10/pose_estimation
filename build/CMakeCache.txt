@@ -22,7 +22,7 @@ CMAKE_AR:FILEPATH=/usr/bin/ar
 
 //Choose the type of build, options are: None Debug Release RelWithDebInfo
 // MinSizeRel ...
-CMAKE_BUILD_TYPE:STRING=
+CMAKE_BUILD_TYPE:STRING=Release
 
 //Enable/Disable color output during build.
 CMAKE_COLOR_MAKEFILE:BOOL=ON
@@ -348,6 +348,9 @@ CUDA_nvToolsExt_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libnvToolsExt.so
 
 //Path to a library.
 CUDA_rt_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/librt.a
+
+//No help, variable specified on the command line.
+ONNXRUNTIME_DIR:UNINITIALIZED=/media/user/Respaldos/Descargas/onnxruntime
 
 //No help, variable specified on the command line.
 OpenCV_DIR:UNINITIALIZED=/home/user/librerias/opencv_final/lib/cmake/opencv4

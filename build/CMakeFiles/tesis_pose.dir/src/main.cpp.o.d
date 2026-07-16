@@ -394,4 +394,6 @@ CMakeFiles/tesis_pose.dir/src/main.cpp.o: \
  /media/user/Respaldos/Descargas/onnxruntime/include/onnxruntime_float16.h \
  /usr/include/c++/13/variant \
  /media/user/Respaldos/Descargas/onnxruntime/include/onnxruntime_cxx_inline.h \
- /usr/include/c++/13/iterator /usr/include/c++/13/bits/stream_iterator.h
+ /usr/include/c++/13/iterator /usr/include/c++/13/bits/stream_iterator.h \
+ /media/user/Respaldos/VC-Tesis/pose_estimation/include/yolo_pose.hpp \
+ /media/user/Respaldos/VC-Tesis/pose_estimation/include/pose_estimator.hpp

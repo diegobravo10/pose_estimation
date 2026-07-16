@@ -13,6 +13,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/media/user/Respaldos/VC-Tesis/pose_estimation/src/fps_meter.cpp" "CMakeFiles/tesis_pose.dir/src/fps_meter.cpp.o" "gcc" "CMakeFiles/tesis_pose.dir/src/fps_meter.cpp.o.d"
   "/media/user/Respaldos/VC-Tesis/pose_estimation/src/main.cpp" "CMakeFiles/tesis_pose.dir/src/main.cpp.o" "gcc" "CMakeFiles/tesis_pose.dir/src/main.cpp.o.d"
   "/media/user/Respaldos/VC-Tesis/pose_estimation/src/pose_estimator.cpp" "CMakeFiles/tesis_pose.dir/src/pose_estimator.cpp.o" "gcc" "CMakeFiles/tesis_pose.dir/src/pose_estimator.cpp.o.d"
+  "/media/user/Respaldos/VC-Tesis/pose_estimation/src/yolo_pose.cpp" "CMakeFiles/tesis_pose.dir/src/yolo_pose.cpp.o" "gcc" "CMakeFiles/tesis_pose.dir/src/yolo_pose.cpp.o.d"
   )
 
 # Targets to which this target links which contain Fortran sources.

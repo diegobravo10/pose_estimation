@@ -9,6 +9,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/tesis_pose.dir/src/main.cpp.o.d"
   "CMakeFiles/tesis_pose.dir/src/pose_estimator.cpp.o"
   "CMakeFiles/tesis_pose.dir/src/pose_estimator.cpp.o.d"
+  "CMakeFiles/tesis_pose.dir/src/yolo_pose.cpp.o"
+  "CMakeFiles/tesis_pose.dir/src/yolo_pose.cpp.o.d"
   "tesis_pose"
   "tesis_pose.pdb"
 )
