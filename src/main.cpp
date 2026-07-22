@@ -21,7 +21,7 @@ int main(
     std::string modelType =
         "movenet";
 
-    std::string source = "0";
+    std::string source = "4";
 
     bool usingCamera = true;
 

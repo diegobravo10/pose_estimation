@@ -11,6 +11,8 @@ results/*.csv
 # VS Code
 .vscode/
 
+.venv/
+
 # Sistema operativo
 .DS_Store
 

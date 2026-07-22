@@ -34,9 +34,9 @@ from mediapipe.tasks.python import vision as mp_vision
 _SCRIPT_DIR   = os.path.dirname(os.path.abspath(__file__))
 _PROJECT_ROOT = os.path.dirname(_SCRIPT_DIR)
 
-MODEL_PATH   = os.path.join(_PROJECT_ROOT, "model", "pose_landmarker_lite.task")
+MODEL_PATH   = os.path.join(_PROJECT_ROOT, "model", "pose_landmarker_full.task")
 CSV_PATH     = os.path.join(_PROJECT_ROOT, "results", "mediapipe_pose.csv")
-WINDOW_TITLE = "MediaPipe Pose Landmarker Lite"
+WINDOW_TITLE = "MediaPipe Pose Landmarker FUll"
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Conexiones del esqueleto de 33 landmarks de MediaPipe Pose.
